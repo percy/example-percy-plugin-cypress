@@ -1,0 +1,8 @@
+node_modules/
+.secrets
+.percy/
+.DS_Store
+*.log
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/

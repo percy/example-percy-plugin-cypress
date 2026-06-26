@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Contact | Lumina Home</title>
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container">
+    <a href="index.html" class="logo">Lumina<span> Home</span></a>
+    <nav class="main-nav">
+      <a href="index.html">Home</a>
+      <a href="products.html">Shop</a>
+      <a href="blog.html">Journal</a>
+      <a href="about.html">About</a>
+      <a href="contact.html" class="active">Contact</a>
+      <a href="cart.html">Cart</a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Get in touch</h2>
+      <p>For care guidance, repairs, or a question about an order — write us. We answer within two working days.</p>
+    </div>
+    <form class="form" onsubmit="event.preventDefault();">
+      <label for="name">Your name</label>
+      <input id="name" type="text" placeholder="Anya Petersen">
+      <label for="email">Email address</label>
+      <input id="email" type="email" placeholder="anya@example.com">
+      <label for="subject">Subject</label>
+      <input id="subject" type="text" placeholder="Care guidance for the Arc lamp">
+      <label for="message">Message</label>
+      <textarea id="message" rows="5" placeholder="Tell us what you need help with…"></textarea>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;" type="submit">Send message</button>
+    </form>
+  </div>
+</section>
+
+<section class="section" style="background:#fff;">
+  <div class="container">
+    <div class="card-grid">
+      <div class="card"><h3>Shipping</h3><p>Free over $200 within the EU and UK. Three working days, fully insured.</p></div>
+      <div class="card"><h3>Returns</h3><p>30 days, no questions. We email a prepaid label and you keep the packaging for the next piece.</p></div>
+      <div class="card"><h3>Repairs</h3><p>Ten-year repair guarantee on every piece. Email us a photo and we'll arrange collection.</p></div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="logo">Lumina<span> Home</span></a>
+        <p>Considered objects for the modern home, designed in Copenhagen.</p>
+      </div>
+      <div class="footer-col"><h4>Shop</h4><ul><li><a href="products.html">All products</a></li><li><a href="products.html">Lighting</a></li><li><a href="products.html">Ceramics</a></li><li><a href="products.html">Furniture</a></li></ul></div>
+      <div class="footer-col"><h4>Company</h4><ul><li><a href="about.html">About us</a></li><li><a href="blog.html">Journal</a></li><li><a href="contact.html">Contact</a></li></ul></div>
+      <div class="footer-col"><h4>Help</h4><ul><li><a href="contact.html">Shipping</a></li><li><a href="contact.html">Returns</a></li><li><a href="contact.html">Care guide</a></li></ul></div>
+    </div>
+    <div class="footer-bottom">© Lumina Home. Designed in Copenhagen.</div>
+  </div>
+</footer>
+</body>
+</html>

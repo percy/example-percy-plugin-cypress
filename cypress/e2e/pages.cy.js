@@ -15,5 +15,6 @@ describe('Content pages', () => {
     cy.visit('/contact.html')
     cy.get('form.form').should('exist')
     cy.get('form.form .btn-primary').should('contain.text', 'Send message')
+    cy.percySnapshot('Contact — form')
   })
 })

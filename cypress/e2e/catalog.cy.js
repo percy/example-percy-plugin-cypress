@@ -7,6 +7,7 @@ describe('Catalog', () => {
     cy.visit('/products.html')
     cy.get('.section-header h2').should('contain.text', 'The Collection')
     cy.get('.product-grid .product-card').should('have.length', 8)
+    cy.percySnapshot('Catalog — shop grid')
   })
 
   it('opens the Arc Table Lamp product detail', () => {

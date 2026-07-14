@@ -4,6 +4,7 @@ describe('Home page', () => {
     cy.get('.hero h1').should('contain.text', 'Considered objects')
     cy.get('.hero .btn-primary').should('contain.text', 'Shop the collection')
     cy.get('.product-grid .product-card').should('have.length', 4)
+    cy.percySnapshot('Home — hero & featured')
   })
 
   it('links the hero CTA to the shop', () => {

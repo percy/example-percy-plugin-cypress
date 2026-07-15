@@ -5,11 +5,13 @@
   "description": "Cypress + Lumina demo app for the Percy Visual Testing plugin's integrate / expand-coverage skills. Starts with NO Percy.",
   "scripts": {
     "serve": "http-server site -p 5599 --silent",
-    "cy:run": "cypress run",
+    "cy:run": "node scripts/cypress-run.mjs",
     "cy:open": "cypress open",
     "test": "start-server-and-test serve http://localhost:5599 cy:run"
   },
   "devDependencies": {
+    "@percy/cli": "^1.32.3",
+    "@percy/cypress": "^3.1.8",
     "cypress": "^13.15.0",
     "http-server": "^14.1.1",
     "start-server-and-test": "^2.0.8"

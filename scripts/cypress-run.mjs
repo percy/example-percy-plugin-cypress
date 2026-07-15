@@ -1,10 +1,17 @@
-// Launcher for `npm run cy:run` — pins CYPRESS_RUN_BINARY to the locally
-// cached Cypress.app so cypress's own binary resolution never runs.
-// That resolution step is corrupted by package-proxy shims (PMG) in some
-// shells (symptom: "Cannot find module …Cypress.app/Contents/MacOS/Contents/
-// Resources/app/index.js" — note the doubled Contents). The cached binary
-// itself is real and `cypress verify` passes; only the lookup breaks.
-// On machines without a macOS cache (CI/Linux), this is a no-op passthrough.
+// Launcher for `npm run cy:run` — makes Cypress launch reliably from ANY
+// shell, including agent/IDE subshells. Two independent protections:
+//
+// 1. Strips ELECTRON_RUN_AS_NODE from the child env. Electron-based IDEs
+//    (VS Code, Claude Code desktop, Cursor…) inject ELECTRON_RUN_AS_NODE=1
+//    into subprocess environments; it forces Cypress's Electron binary to
+//    boot as plain Node, which dies with the signature error
+//    "Cannot find module …Cypress.app/Contents/MacOS/Contents/Resources/app/
+//    index.js" (note the doubled Contents). The binary is fine — the env
+//    var is the poison. (Reproduced + fix verified 2026-07-15.)
+// 2. Pins CYPRESS_RUN_BINARY to the locally cached Cypress.app so cypress's
+//    binary resolution never runs (package-proxy shims can corrupt it).
+//
+// On machines without a macOS cache (CI/Linux), the pin is a no-op passthrough.
 import { existsSync, readdirSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
 import { homedir } from 'node:os'
@@ -28,6 +35,9 @@ if (!process.env.CYPRESS_RUN_BINARY) {
   }
 }
 
+const env = { ...process.env }
+delete env.ELECTRON_RUN_AS_NODE
+
 const cypressCli = join('node_modules', '.bin', 'cypress')
-const r = spawnSync(cypressCli, ['run', ...process.argv.slice(2)], { stdio: 'inherit', env: process.env })
+const r = spawnSync(cypressCli, ['run', ...process.argv.slice(2)], { stdio: 'inherit', env })
 process.exit(r.status ?? 1)

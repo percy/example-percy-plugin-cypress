@@ -16,7 +16,12 @@
 #      (.percy.yml, CLAUDE.md, percySnapshot() lines, package.json deps).
 #   3. Removes integration artifacts setup created untracked: .env, .percy/, and
 #      (with --deep) node_modules so the SDK install happens on camera.
-#   4. (opt-in --push-main) rewinds origin/main to pre-percy so a fresh clone is
+#   4. Archives (renames) any Percy project in the test org whose NAME matches
+#      this repo — a leftover project from a prior take name-matches the repo,
+#      which makes /percy:setup recommend REUSING it (+ its stale token) instead
+#      of "create new". Rename → zz-archived-… kills the match; reversible.
+#      Needs PERCY_USERNAME/PERCY_ACCESS_KEY in env; silently skipped otherwise.
+#   5. (opt-in --push-main) rewinds origin/main to pre-percy so a fresh clone is
 #      also a valid zero-state. Best-effort; a permission block won't abort.
 #
 # Usage: ./scripts/reset-demo.sh [--deep] [--push-main]
@@ -24,8 +29,9 @@
 #   --push-main   also rewind origin/main to pre-percy (outward-facing; do once)
 #
 # Requires: gh CLI authenticated (gh auth status).
-# Percy creds NOT needed — Z/Q builds its baseline locally during the demo;
-# there is no persistent main build to keep approved.
+# Percy creds optional — no builds to approve (Z/Q creates a fresh project per
+# take), but PERCY_USERNAME/PERCY_ACCESS_KEY enable step 4 (project archiving).
+# PERCY_ORG_SLUG overrides the org (default: test).
 
 set -euo pipefail
 
@@ -91,6 +97,37 @@ git clean -fd >/dev/null 2>&1 || true   # untracked, non-ignored (leaves node_mo
 if $DEEP; then
   echo "  - --deep: removing node_modules"
   rm -rf node_modules
+fi
+
+REPO_NAME="$(basename "$REPO_DIR")"
+ORG_SLUG="${PERCY_ORG_SLUG:-test}"
+if [ -n "${PERCY_USERNAME:-}" ] && [ -n "${PERCY_ACCESS_KEY:-}" ]; then
+  echo "[reset] Archiving Percy projects named after this repo (org: $ORG_SLUG)…"
+  curl -sS -u "$PERCY_USERNAME:$PERCY_ACCESS_KEY" -H "User-Agent: curl/8.7.1" \
+    "https://percy.io/api/v1/organizations/$ORG_SLUG/projects" 2>/dev/null \
+  | python3 -c "
+import sys, json
+repo = '$REPO_NAME'
+try:
+    d = json.load(sys.stdin)
+except Exception:
+    sys.exit(0)
+for p in d.get('data', []):
+    name = (p.get('attributes') or {}).get('name') or ''
+    if name == repo or name.startswith(repo + '-'):
+        print(f\"{p['id']}\t{name}\")
+" | while IFS=$'\t' read -r PID PNAME; do
+      [ -z "$PID" ] && continue
+      NEW_NAME="zz-archived-$PNAME-$(date +%y%m%d%H%M)"
+      echo "  - renaming project $PID ($PNAME) → $NEW_NAME"
+      curl -sS -u "$PERCY_USERNAME:$PERCY_ACCESS_KEY" -H "User-Agent: curl/8.7.1" \
+        -H "Content-Type: application/vnd.api+json" -X PATCH \
+        "https://percy.io/api/v1/projects/$PID" \
+        -d "{\"data\":{\"type\":\"projects\",\"id\":\"$PID\",\"attributes\":{\"name\":\"$NEW_NAME\"}}}" \
+        >/dev/null 2>&1 || echo "  - WARNING: rename of $PID failed (continuing)" >&2
+    done || true
+else
+  echo "[reset] Skipping Percy project archiving (PERCY_USERNAME/PERCY_ACCESS_KEY not in env)."
 fi
 
 if $PUSH_MAIN; then

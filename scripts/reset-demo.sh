@@ -44,6 +44,9 @@ for arg in "$@"; do
   esac
 done
 
+echo "[reset] Freeing demo server port 5599 (kills stray http-server from a prior take)…"
+lsof -ti :5599 2>/dev/null | xargs kill -9 2>/dev/null || true
+
 echo "[reset] Fetching refs + tags…"
 git fetch --tags --prune origin >/dev/null 2>&1 || true
 

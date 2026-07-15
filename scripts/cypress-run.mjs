@@ -10,6 +10,13 @@
 //    var is the poison. (Reproduced + fix verified 2026-07-15.)
 // 2. Pins CYPRESS_RUN_BINARY to the locally cached Cypress.app so cypress's
 //    binary resolution never runs (package-proxy shims can corrupt it).
+// 3. Strips HTTP(S)_PROXY from the child env. Agent/IDE sandboxes (e.g. the
+//    package-manager proxy `pmg`) inject HTTP_PROXY/HTTPS_PROXY pointing at a
+//    local forward proxy. Cypress does NOT honor NO_PROXY for its baseUrl
+//    verification, so it routes the http://localhost check through that proxy
+//    and dies with "Cypress could not verify that this server is running".
+//    A `cypress run` against a localhost app needs no outbound proxy, so we
+//    drop the vars entirely. (Reproduced + fix verified 2026-07-15.)
 //
 // On machines without a macOS cache (CI/Linux), the pin is a no-op passthrough.
 import { existsSync, readdirSync } from 'node:fs'
@@ -37,6 +44,7 @@ if (!process.env.CYPRESS_RUN_BINARY) {
 
 const env = { ...process.env }
 delete env.ELECTRON_RUN_AS_NODE
+for (const k of ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy']) delete env[k]
 
 const cypressCli = join('node_modules', '.bin', 'cypress')
 const r = spawnSync(cypressCli, ['run', ...process.argv.slice(2)], { stdio: 'inherit', env })

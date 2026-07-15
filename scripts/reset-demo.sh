@@ -115,7 +115,7 @@ except Exception:
 for p in d.get('data', []):
     name = (p.get('attributes') or {}).get('name') or ''
     if name == repo or name.startswith(repo + '-'):
-        print(f\"{p['id']}\t{name}\")
+        print('%s\t%s' % (p['id'], name))
 " | while IFS=$'\t' read -r PID PNAME; do
       [ -z "$PID" ] && continue
       NEW_NAME="zz-archived-$PNAME-$(date +%y%m%d%H%M)"

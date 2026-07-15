@@ -2,6 +2,7 @@
   --color-primary: #1B2B4B;
   --color-primary-hover: #2D4A7A;
   --color-accent: #93C5FD;
+  --color-teal: #0D9488;
   --color-bg: #F8F6F2;
   --color-text: #2D2D2D;
   --color-muted: #6B7280;
@@ -105,7 +106,7 @@ img { max-width: 100%; display: block; }
 /* Cards (generic content) */
 .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
 .card { background: #fff; border-radius: 12px; padding: 32px; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
-.card h3 { font-size: 20px; color: var(--color-primary); margin-bottom: 12px; font-weight: 700; }
+.card h3 { font-size: 20px; color: var(--color-teal); margin-bottom: 12px; font-weight: 700; height: 150px; overflow: hidden }
 .card p { color: var(--color-muted); font-size: 15px; }
 
 /* Article (product detail / blog) */

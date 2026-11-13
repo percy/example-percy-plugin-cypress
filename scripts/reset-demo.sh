@@ -37,7 +37,7 @@
 set -euo pipefail
 
 REPO="percy/example-percy-plugin-cypress"
-CLEAN_TAG="pre-percy"
+CLEAN_TAG="pre-percy-v2"   # v2 = pre-Percy + hardened .npmrc + PR-safe reset (old `pre-percy` kept)
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO_DIR"
 
@@ -59,7 +59,7 @@ git fetch --tags --prune origin >/dev/null 2>&1 || true
 
 CLEAN_SHA=$(git rev-parse "refs/tags/$CLEAN_TAG" 2>/dev/null || true)
 if [ -z "$CLEAN_SHA" ]; then
-  echo "[reset] ERROR: tag '$CLEAN_TAG' not found. Create it: git tag pre-percy <pre-Percy-sha> && git push origin pre-percy" >&2
+  echo "[reset] ERROR: tag '$CLEAN_TAG' not found. Create it: git tag $CLEAN_TAG <pre-Percy-sha> && git push origin $CLEAN_TAG" >&2
   exit 1
 fi
 
@@ -145,7 +145,7 @@ fi
 if $PUSH_MAIN; then
   echo "[reset] Rewinding origin/main to $CLEAN_TAG (best-effort)…"
   if git push --force-with-lease origin "$CLEAN_SHA:refs/heads/main" >/dev/null 2>&1; then
-    echo "  - origin/main rewound to pre-percy."
+    echo "  - origin/main rewound to $CLEAN_TAG."
   else
     echo "  - WARNING: force-push blocked; trying gh api…" >&2
     gh api -X PATCH "repos/$REPO/git/refs/heads/main" -f sha="$CLEAN_SHA" -F force=true >/dev/null 2>&1 \
@@ -155,7 +155,7 @@ if $PUSH_MAIN; then
 fi
 
 echo
-echo "[reset] Clean. On branch main @ pre-percy (no Percy integrated):"
+echo "[reset] Clean. On branch main @ $CLEAN_TAG (no Percy integrated):"
 git log --oneline -1
 if $DEEP; then
   echo "        Next: npm install (node_modules removed), then /percy:setup — runbook Variant Z/Q."

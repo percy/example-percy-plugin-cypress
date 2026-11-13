@@ -9,8 +9,9 @@
 # once with --push-main to make that true.
 #
 # Does:
-#   1. Closes any open non-dependabot PR against main + deletes its head branch
-#      (local + remote) — cleans up whatever branch a take opened.
+#   1. Closes open PRs against main that YOU (the gh user running this) opened,
+#      + deletes their head branch (local + remote) — cleans up whatever branch a
+#      take opened. Other people's PRs (real work, dependabot) are never touched.
 #   2. Checks out main, hard-resets it to the `pre-percy` tag, deletes leftover
 #      local demo branches. This drops the integration commit's tracked files
 #      (.percy.yml, CLAUDE.md, percySnapshot() lines, package.json deps).
@@ -62,16 +63,27 @@ if [ -z "$CLEAN_SHA" ]; then
   exit 1
 fi
 
-echo "[reset] Closing open non-dependabot PRs against main…"
-PRS=$(gh pr list --repo "$REPO" --base main --state open --json number,headRefName \
-        --jq '.[] | "\(.number)\t\(.headRefName)"' 2>/dev/null || true)
+echo "[reset] Closing your open demo PRs against main…"
+# Demo takes open PRs as the person recording, so only their PRs are leftovers.
+# Anyone else's PR is real work (e.g. a dependency bump) and must survive a reset.
+ME=$(gh api user --jq .login 2>/dev/null || true)
+PRS=""
+if [ -z "$ME" ]; then
+  echo "  - can't tell who you are on GitHub (gh api user failed) — not closing any PRs."
+else
+  PRS=$(gh pr list --repo "$REPO" --base main --state open --json number,headRefName,author \
+          --jq '.[] | "\(.number)\t\(.headRefName)\t\(.author.login)"' 2>/dev/null || true)
+fi
 if [ -n "$PRS" ]; then
-  while IFS=$'\t' read -r NUM HEAD; do
+  while IFS=$'\t' read -r NUM HEAD AUTHOR; do
     [ -z "$NUM" ] && continue
     case "$HEAD" in
-      dependabot/*) echo "  - skip #$NUM ($HEAD) — not a demo branch"; continue;;
-      main) continue;;
+      dependabot/*|main) echo "  - skip #$NUM ($HEAD) — not a demo branch"; continue;;
     esac
+    if [ "$AUTHOR" != "$ME" ]; then
+      echo "  - skip #$NUM ($HEAD) — opened by $AUTHOR, not a demo take"
+      continue
+    fi
     echo "  - closing #$NUM ($HEAD) + deleting branch"
     gh pr close --repo "$REPO" "$NUM" --delete-branch >/dev/null 2>&1 || true
     git push origin --delete "$HEAD" >/dev/null 2>&1 || true

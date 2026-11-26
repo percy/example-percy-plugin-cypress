@@ -7,7 +7,8 @@
     "serve": "http-server site -p 5599 --silent",
     "cy:run": "node scripts/cypress-run.mjs",
     "cy:open": "cypress open",
-    "test": "start-server-and-test serve http://localhost:5599 cy:run"
+    "test": "start-server-and-test serve http://localhost:5599 cy:run",
+    "percy": "set -a && . ./.percy/.env && set +a && CYPRESS_BASE_URL=http://127.0.0.1:5599 NO_PROXY=localhost,127.0.0.1 percy exec -- start-server-and-test 'http-server site -a 127.0.0.1 -p 5599 --silent' http://127.0.0.1:5599 'node scripts/cypress-run.mjs'"
   },
   "devDependencies": {
     "@percy/cli": "^1.32.3",
